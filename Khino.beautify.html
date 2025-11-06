@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>MPlay</title>
+    <style>
+      #kpcontainer {
+        height: 72px;
+        width: 650px;
+        overflow: hidden;
+        background-color: #434343;
+        color: #fff;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -khtml-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        font-family: sans-serif
+      }
+
+      #audiocontrols {
+        height: 32px;
+        background-color: #898989;
+        width: 650px
+      }
+
+      .time {
+        font-size: 18px;
+        color: #fff;
+        position: relative;
+        width: 64px;
+        font-weight: 700
+      }
+
+      #volume {
+        width: 80px
+      }
+
+      #stop::after {
+        content: "⏹️";
+      }
+
+      #playpause.playing::after {
+        content: "⏸️"
+      }
+
+      #playpause.paused::after {
+        content: "▶️";
+      }
+
+      #open::after {
+        content: "⏏️";
+      }
+
+      #speed::after {
+        content: "⏱️";
+      }
+
+      #speedslider {
+        width: 32px;
+        height: 32px
+      }
+
+      #replay::after {
+        content: "🔄";
+      }
+
+      #mute.muted::after {
+        content: "🔇";
+      }
+
+      #mute.unmuted::after {
+        content: "🔊";
+      }
+
+      .ctrlbutton {
+        margin: 0;
+        padding: 0;
+        font-size: 1.125em;
+        width: 32px;
+        height: 32px;
+        cursor: pointer
+      }
+
+      #length {
+        width: 256px
+      }
+    </style>
+  </head>
+  <body>
+    <div id="kpcontainer"><input type="file" class="hidden" id="fileinput" accept=".mp3, .wav, .ogg, .flac" onchange="handleFile()" hidden><audio id="khinoplayer" src="">
+        <p>Browser is outdated...pls update.!!</p>
+      </audio>
+      <div id="controls" class="audiocontrols"><button id="playpause" class="ctrlbutton paused" type="button"></button><span id="curtime" class="time">0:00</span><input type="range" name="length" min="0" max="100" step="0.01" id="length" value="0"><span id="time" class="time">0:00</span><button id="stop" class="ctrlbutton" type="button"></button><button id="replay" class="ctrlbutton" type="button"></button><button id="mute" class="ctrlbutton unmuted" type="button"></button><input type="range" name="volume" min="0" max="1" step="0.1" value="1" id="volume" onchange="updateVol()"><button id="open" class="ctrlbutton" type="button"></button><button id="speed" class="ctrlbutton" type="button"></button></div>
+      <div><span id="speedind">1.0x</span></div>
+      <div class="kp-logo">KhinoPlayer v1.0</div>
+    </div>
+    <script>
+      const muteDOM = document.getElementById("mute"),
+        playerDOM = document.getElementById("khinoplayer"),
+        playDOM = document.getElementById("playpause"),
+        stopDOM = document.getElementById("stop"),
+        speedDOM = document.getElementById("speed"),
+        openDOM = document.getElementById("open"),
+        replayDOM = document.getElementById("replay"),
+        vslider = document.getElementById("volume"),
+        audioLength = document.getElementById("time"),
+        scrobbler = document.getElementById("length"),
+        cpos = document.getElementById("curtime"),
+        fi = document.getElementById("fileinput"),
+        si = document.getElementById("speedind");
+      let file, playStatus = !1,
+        volume = 1,
+        muted = !1,
+        speed = 1,
+        duration = 0;
+
+      function handleFile() {
+        if (!(window.File && window.FileReader && window.FileList && window.Blob)) return void alert("Sorry, file API is not fully supported for this browser.!!");
+        document.getElementById("open");
+        if (fi)
+          if (fi.files)
+            if (fi.files[0]) {
+              file = fi.files[0];
+              let e = new FileReader;
+              e.readAsDataURL(file), e.onload = function() {
+                playerDOM.src = e.result, playerDOM.addEventListener("loadedmetadata", (function() {
+                  duration = playerDOM.duration, console.log("duration: ", duration), updateUI()
+                }), !1), playAudio(!0)
+              }, e.onerror = function(e) {
+                console.error("BAD CODE! ", e)
+              }
+            } else alert("What do you think youre doing Stop stupid.!!");
+        else alert("Browser stupid.!!");
+        else alert("Failed to find file upload element.!!")
+      }
+
+      function updateUI() {
+        const e = Math.floor(duration / 60),
+          t = duration % 60,
+          d = `${e}:${t<10?"0"+Math.floor(t):Math.floor(t)}`;
+        audioLength.textContent = d, scrobbler.max = duration
+      }
+
+      function updateBar() {
+        const e = playerDOM.currentTime,
+          t = e % 60,
+          d = `${Math.floor(e/60)}:${t<10?"0"+Math.round(t):Math.round(t)}`;
+        cpos.textContent = d, scrobbler.value = e
+      }
+
+      function changePos() {
+        playerDOM.currentTime = scrobbler.value
+      }
+
+      function playAudio(e = !1) {
+        playStatus ? (playerDOM.pause(), playDOM.classList.add("paused"), playDOM.classList.remove("playing"), playStatus = !1) : (playerDOM.play(), playDOM.classList.remove("paused"), playDOM.classList.add("playing"), playStatus = !0), e && (playerDOM.play(), playDOM.classList.remove("paused"), playDOM.classList.add("playing"), playStatus = !0)
+      }
+
+      function stopAudio() {
+        playerDOM.pause(), playerDOM.currentTime = 0
+      }
+
+      function muteAudio() {
+        muted ? (updateVol(), muteDOM.classList.add("unmuted"), muteDOM.classList.remove("muted"), muted = !1) : (playerDOM.volume = 0, muteDOM.classList.remove("unmuted"), muteDOM.classList.add("muted"), muted = !0)
+      }
+
+      function rewindAudio() {
+        playerDOM.currentTime = 0, playerDOM.play()
+      }
+
+      function updateVol() {
+        volume = vslider.value, playerDOM.volume = volume
+      }
+
+      function updateSpeed() {
+        speed += .25, speed > 2 && (speed = .5), si.textContent = speed + "x", playerDOM.playbackRate = speed
+      }
+      openDOM.addEventListener("click", (e => {
+        fi && fi.click()
+      }), !1), speedDOM.addEventListener("click", (e => {
+        updateSpeed()
+      }), !1), muteDOM.addEventListener("click", (e => {
+        muteAudio()
+      }), !1), replayDOM.addEventListener("click", (e => {
+        rewindAudio()
+      }), !1), playDOM.addEventListener("click", (e => {
+        playAudio()
+      }), !1), stopDOM.addEventListener("click", (e => {
+        stopAudio()
+      }), !1), playerDOM.addEventListener("timeupdate", (e => {
+        updateBar()
+      }), !1), scrobbler.addEventListener("input", (e => {
+        changePos()
+      }), !1);
+    </script>
+  </body>
+</html>

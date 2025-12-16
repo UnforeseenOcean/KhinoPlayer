@@ -3,29 +3,28 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <title>MPlay</title>
+    <title>KhinoPlayer</title>
     <style>
-      #kpcontainer {
+      #x {
         height: 72px;
         width: 650px;
         overflow: hidden;
-        background-color: #434343;
+        background-color: #444;
         color: #fff;
         -webkit-user-select: none;
         -moz-user-select: none;
         -khtml-user-select: none;
         -ms-user-select: none;
         user-select: none;
-        font-family: sans-serif
+        font-family: monospace
       }
 
-      #audiocontrols {
-        height: 32px;
-        background-color: #898989;
+      #ac {
+        background-color: #888;
         width: 650px
       }
 
-      .time {
+      .tm {
         font-size: 18px;
         color: #fff;
         position: relative;
@@ -33,166 +32,159 @@
         font-weight: 700
       }
 
-      #volume {
+      #vl {
         width: 80px
       }
 
-      #stop::after {
+      #sp::after {
         content: "⏹️";
       }
 
-      #playpause.playing::after {
+      #pp.ply::after {
         content: "⏸️"
       }
 
-      #playpause.paused::after {
+      #pp.psd::after {
         content: "▶️";
       }
 
-      #open::after {
+      #op::after {
         content: "⏏️";
       }
 
-      #speed::after {
+      #v::after {
         content: "⏱️";
       }
 
-      #speedslider {
-        width: 32px;
-        height: 32px
-      }
-
-      #replay::after {
+      #rp::after {
         content: "🔄";
       }
 
-      #mute.muted::after {
+      #mt.m::after {
         content: "🔇";
       }
 
-      #mute.unmuted::after {
+      #mt.g::after {
         content: "🔊";
       }
 
-      .ctrlbutton {
+      .q {
         margin: 0;
         padding: 0;
-        font-size: 1.125em;
-        width: 32px;
-        height: 32px;
+        font-size: 1.25em;
         cursor: pointer
       }
 
-      #length {
+      #ln {
         width: 256px
       }
     </style>
   </head>
   <body>
-    <div id="kpcontainer"><input type="file" class="hidden" id="fileinput" accept=".mp3, .wav, .ogg, .flac" onchange="handleFile()" hidden><audio id="khinoplayer" src="">
-        <p>Browser is outdated...pls update.!!</p>
+    <div id="x"><input type="file" id="fy" accept=".mp3,.wav,.ogg,.flac" onchange="hfl()" hidden><audio id="kp" src="">
+        <p>Pls update.!!</p>
       </audio>
-      <div id="controls" class="audiocontrols"><button id="playpause" class="ctrlbutton paused" type="button"></button><span id="curtime" class="time">0:00</span><input type="range" name="length" min="0" max="100" step="0.01" id="length" value="0"><span id="time" class="time">0:00</span><button id="stop" class="ctrlbutton" type="button"></button><button id="replay" class="ctrlbutton" type="button"></button><button id="mute" class="ctrlbutton unmuted" type="button"></button><input type="range" name="volume" min="0" max="1" step="0.1" value="1" id="volume" onchange="updateVol()"><button id="open" class="ctrlbutton" type="button"></button><button id="speed" class="ctrlbutton" type="button"></button></div>
-      <div><span id="speedind">1.0x</span></div>
-      <div class="kp-logo">KhinoPlayer v1.0</div>
+      <div class="ac"><button id="pp" class="q psd" type="button"></button><span id="ct" class="tm">0:00</span><input type="range" name="ln" min="0" max="100" step="0.01" id="ln" value="0"><span id="tm" class="tm">0:00</span><button id="sp" class="q" type="button"></button><button id="rp" class="q" type="button"></button><button id="mt" class="q g" type="button"></button><input type="range" name="vl" min="0" max="1" step="0.01" value="1" id="vl" onchange="uvl()"><button id="op" class="q" type="button"></button><button id="v" class="q" type="button"></button></div>
+      <div><span id="sq">1.0x</span></div>
+      <div class="kp-logo">KhinoPlayer v1.1</div>
     </div>
     <script>
-      const muteDOM = document.getElementById("mute"),
-        playerDOM = document.getElementById("khinoplayer"),
-        playDOM = document.getElementById("playpause"),
-        stopDOM = document.getElementById("stop"),
-        speedDOM = document.getElementById("speed"),
-        openDOM = document.getElementById("open"),
-        replayDOM = document.getElementById("replay"),
-        vslider = document.getElementById("volume"),
-        audioLength = document.getElementById("time"),
-        scrobbler = document.getElementById("length"),
-        cpos = document.getElementById("curtime"),
-        fi = document.getElementById("fileinput"),
-        si = document.getElementById("speedind");
-      let file, playStatus = !1,
-        volume = 1,
-        muted = !1,
-        speed = 1,
-        duration = 0;
+      const a = document.getElementById("mt"),
+        b = document.getElementById("kp"),
+        c = document.getElementById("pp"),
+        f = document.getElementById("sp"),
+        h = document.getElementById("v"),
+        i = document.getElementById("op"),
+        j = document.getElementById("rp"),
+        k = document.getElementById("vl"),
+        l = document.getElementById("tm"),
+        o = document.getElementById("ln"),
+        p = document.getElementById("ct"),
+        q = document.getElementById("fy"),
+        r = document.getElementById("sq");
+      let file, pst = !1,
+        vol = 1,
+        m = !1,
+        sp = 1,
+        dr = 0;
 
-      function handleFile() {
-        if (!(window.File && window.FileReader && window.FileList && window.Blob)) return void alert("Sorry, file API is not fully supported for this browser.!!");
-        document.getElementById("open");
-        if (fi)
-          if (fi.files)
-            if (fi.files[0]) {
-              file = fi.files[0];
+      function hfl() {
+        if (!(window.File && window.FileReader && window.FileList && window.Blob)) return void alert("Bad file API");
+        document.getElementById("op");
+        if (q)
+          if (q.files)
+            if (q.files[0]) {
+              file = q.files[0];
               let e = new FileReader;
               e.readAsDataURL(file), e.onload = function() {
-                playerDOM.src = e.result, playerDOM.addEventListener("loadedmetadata", (function() {
-                  duration = playerDOM.duration, console.log("duration: ", duration), updateUI()
-                }), !1), playAudio(!0)
+                b.src = e.result, b.addEventListener("loadedmetadata", (function() {
+                  dr = b.duration, console.log("dur: ", dr), uui()
+                }), !1), pau(!0)
               }, e.onerror = function(e) {
-                console.error("BAD CODE! ", e)
+                console.error("BAD CODE!", e)
               }
-            } else alert("What do you think youre doing Stop stupid.!!");
-        else alert("Browser stupid.!!");
-        else alert("Failed to find file upload element.!!")
+            } else alert("No stupid");
+        else alert("Bad browser");
+        else alert("No elem")
       }
 
-      function updateUI() {
-        const e = Math.floor(duration / 60),
-          t = duration % 60,
-          d = `${e}:${t<10?"0"+Math.floor(t):Math.floor(t)}`;
-        audioLength.textContent = d, scrobbler.max = duration
+      function uui() {
+        const e = Math.floor(dr / 60),
+          t = dr % 60,
+          d = `${Math.floor(dr/60)}:${String(Math.round(t)).padStart(2,"0")} `;
+        l.textContent = d, o.max = dr
       }
 
-      function updateBar() {
-        const e = playerDOM.currentTime,
+      function mov() {
+        const e = b.currentTime,
           t = e % 60,
-          d = `${Math.floor(e/60)}:${t<10?"0"+Math.round(t):Math.round(t)}`;
-        cpos.textContent = d, scrobbler.value = e
+          d = `${Math.floor(e/60)}:${String(Math.round(t)).padStart(2,"0")} `;
+        p.textContent = d, o.value = e
       }
 
-      function changePos() {
-        playerDOM.currentTime = scrobbler.value
+      function cpo() {
+        b.currentTime = o.value
       }
 
-      function playAudio(e = !1) {
-        playStatus ? (playerDOM.pause(), playDOM.classList.add("paused"), playDOM.classList.remove("playing"), playStatus = !1) : (playerDOM.play(), playDOM.classList.remove("paused"), playDOM.classList.add("playing"), playStatus = !0), e && (playerDOM.play(), playDOM.classList.remove("paused"), playDOM.classList.add("playing"), playStatus = !0)
+      function pau(e = !1) {
+        pst ? (b.pause(), c.classList.add("psd"), c.classList.remove("ply"), pst = !1) : (b.play(), c.classList.remove("psd"), c.classList.add("ply"), pst = !0), e && (b.play(), c.classList.remove("psd"), c.classList.add("ply"), pst = !0)
       }
 
-      function stopAudio() {
-        playerDOM.pause(), playerDOM.currentTime = 0
+      function sta() {
+        b.pause(), b.currentTime = 0
       }
 
-      function muteAudio() {
-        muted ? (updateVol(), muteDOM.classList.add("unmuted"), muteDOM.classList.remove("muted"), muted = !1) : (playerDOM.volume = 0, muteDOM.classList.remove("unmuted"), muteDOM.classList.add("muted"), muted = !0)
+      function mua() {
+        m ? (uvl(), a.classList.add("g"), a.classList.remove("m"), m = !1) : (b.volume = 0, a.classList.remove("g"), a.classList.add("m"), m = !0)
       }
 
-      function rewindAudio() {
-        playerDOM.currentTime = 0, playerDOM.play()
+      function rwa() {
+        b.currentTime = 0, b.play()
       }
 
-      function updateVol() {
-        volume = vslider.value, playerDOM.volume = volume
+      function uvl() {
+        vol = k.value, b.volume = vol
       }
 
-      function updateSpeed() {
-        speed += .25, speed > 2 && (speed = .5), si.textContent = speed + "x", playerDOM.playbackRate = speed
+      function snc() {
+        sp += .25, sp > 2 && (sp = .5), r.textContent = sp + "x", b.playbackRate = sp
       }
-      openDOM.addEventListener("click", (e => {
-        fi && fi.click()
-      }), !1), speedDOM.addEventListener("click", (e => {
-        updateSpeed()
-      }), !1), muteDOM.addEventListener("click", (e => {
-        muteAudio()
-      }), !1), replayDOM.addEventListener("click", (e => {
-        rewindAudio()
-      }), !1), playDOM.addEventListener("click", (e => {
-        playAudio()
-      }), !1), stopDOM.addEventListener("click", (e => {
-        stopAudio()
-      }), !1), playerDOM.addEventListener("timeupdate", (e => {
-        updateBar()
-      }), !1), scrobbler.addEventListener("input", (e => {
-        changePos()
+      i.addEventListener("click", (e => {
+        q && q.click()
+      }), !1), h.addEventListener("click", (e => {
+        snc()
+      }), !1), a.addEventListener("click", (e => {
+        mua()
+      }), !1), j.addEventListener("click", (e => {
+        rwa()
+      }), !1), c.addEventListener("click", (e => {
+        pau()
+      }), !1), f.addEventListener("click", (e => {
+        sta()
+      }), !1), b.addEventListener("timeupdate", (e => {
+        mov()
+      }), !1), o.addEventListener("input", (e => {
+        cpo()
       }), !1);
     </script>
   </body>
